@@ -1,1 +1,1 @@
-# ds-toolkit
+# data-science-toolkit
