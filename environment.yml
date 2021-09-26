@@ -1,0 +1,29 @@
+name: dstk-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - black
+  - colorama
+  - fuzzywuzzy
+  - gensim
+  - joblib
+  - ipywidgets
+  - langdetect
+  - matplotlib
+  - nltk
+  - notebook
+  - nb_conda_kernels
+  - numpy
+  - pandas
+  - pillow
+  - pip
+  - pyarrow
+  - requests
+  - sacremoses
+  - scikit-learn
+  - scipy
+  - seaborn
+  - tabulate
+  - tqdm
+  - wordcloud
