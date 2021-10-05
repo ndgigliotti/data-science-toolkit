@@ -8,7 +8,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
-from tools.plotting.utils import smart_subplots, get_desat_cmap
+from ndg_tools.plotting.utils import smart_subplots, get_desat_cmap
 
 
 @singledispatch

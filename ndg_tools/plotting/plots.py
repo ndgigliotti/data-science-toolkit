@@ -7,9 +7,9 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import ticker
 from pandas.core.groupby import DataFrameGroupBy, SeriesGroupBy
-from tools._validation import _validate_orient, _validate_sort
-from tools.plotting.annotate import add_tukey_marks, annot_bars
-from tools.plotting.utils import (
+from ndg_tools._validation import _validate_orient, _validate_sort
+from ndg_tools.plotting.annotate import add_tukey_marks, annot_bars
+from ndg_tools.plotting.utils import (
     cat_palette,
     flip_axis,
     heat_palette,

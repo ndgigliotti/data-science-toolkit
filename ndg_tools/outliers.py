@@ -1,6 +1,6 @@
 from functools import singledispatch
 import warnings
-from tools.typing import FrameOrSeries, Strings
+from ndg_tools.typing import FrameOrSeries, Strings
 from typing import Iterable, Union
 
 import numpy as np
@@ -9,8 +9,8 @@ from numpy import ndarray
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
 from sklearn.preprocessing import scale
-from tools._validation import _invalid_value
-from tools import utils
+from ndg_tools._validation import _invalid_value
+from ndg_tools import utils
 
 
 def _create_mask(data: FrameOrSeries, value=False, dtype=np.bool_):

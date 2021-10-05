@@ -11,9 +11,9 @@ from numpy import ndarray
 from pandas import DataFrame, Series
 from pandas.core.frame import DataFrame
 from sklearn.feature_extraction import text as skl_text
-from tools.language.settings import CACHE_SIZE, DEFAULT_SEP, DEFAULT_TOKENIZER
-from tools.language.utils import chain_processors, process_strings
-from tools.typing import (
+from ndg_tools.language.settings import CACHE_SIZE, DEFAULT_SEP, DEFAULT_TOKENIZER
+from ndg_tools.language.utils import chain_processors, process_strings
+from ndg_tools.typing import (
     Documents,
     PatternLike,
     TaggedTokens,

@@ -10,10 +10,10 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.sentiment.util import mark_negation
 from pandas.core.series import Series
 from scipy.sparse import csr_matrix
-from tools import language as lang
-from tools import utils
-from tools._validation import _invalid_value, _validate_raw_docs
-from tools.typing import CallableOnStr
+from ndg_tools import language as lang
+from ndg_tools import utils
+from ndg_tools._validation import _invalid_value, _validate_raw_docs
+from ndg_tools.typing import CallableOnStr
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import (

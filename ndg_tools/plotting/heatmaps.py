@@ -6,8 +6,8 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from sklearn import metrics
 from sklearn.utils.multiclass import unique_labels
-from tools import utils
-from tools.plotting.utils import HEATMAP_STYLE, heatmap_figsize, get_desat_cmap
+from ndg_tools import utils
+from ndg_tools.plotting.utils import HEATMAP_STYLE, heatmap_figsize, get_desat_cmap
 
 
 def pair_corr_heatmap(

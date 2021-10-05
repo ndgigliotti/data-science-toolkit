@@ -8,8 +8,8 @@ from numpy import ndarray
 import pandas as pd
 from pandas.core.series import Series
 
-from tools.outliers import tukey_fences
-from tools import utils
+from ndg_tools.outliers import tukey_fences
+from ndg_tools import utils
 
 
 def draw_line(

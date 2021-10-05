@@ -23,8 +23,8 @@ from tqdm.notebook import tqdm
 
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.utils import check_consistent_length, compute_sample_weight
-from tools._validation import _check_1d
-from tools.typing import FrameOrSeries, ArrayLike
+from ndg_tools._validation import _check_1d
+from ndg_tools.typing import FrameOrSeries, ArrayLike
 from fuzzywuzzy.process import dedupe, extractOne
 from fuzzywuzzy import fuzz
 

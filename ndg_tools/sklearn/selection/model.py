@@ -25,8 +25,8 @@ from sklearn.model_selection import (
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.utils import compute_sample_weight, deprecated
-from tools import utils
-from tools._validation import _check_overwrite
+from ndg_tools import utils
+from ndg_tools._validation import _check_overwrite
 
 SEARCH_ESTS = (
     GridSearchCV,

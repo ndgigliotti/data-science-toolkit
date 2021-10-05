@@ -7,11 +7,11 @@ import nltk
 import pandas as pd
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
-from tools._validation import _validate_strings
-from tools.language.processors.tokens import fetch_stopwords, remove_stopwords
-from tools.language.settings import DEFAULT_TOKENIZER
-from tools.language.utils import chain_processors
-from tools.typing import CallableOnStr, Documents, Tokenizer
+from ndg_tools._validation import _validate_strings
+from ndg_tools.language.processors.tokens import fetch_stopwords, remove_stopwords
+from ndg_tools.language.settings import DEFAULT_TOKENIZER
+from ndg_tools.language.utils import chain_processors
+from ndg_tools.typing import CallableOnStr, Documents, Tokenizer
 from tqdm.notebook import tqdm
 
 NGRAM_FINDERS = MappingProxyType(

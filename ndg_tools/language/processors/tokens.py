@@ -10,11 +10,11 @@ import numpy as np
 from nltk.corpus.reader import wordnet
 from nltk.sentiment.util import mark_negation as nltk_mark_neg
 from pandas.core.series import Series
-from tools import utils
-from tools._validation import _validate_tokens
-from tools.language.settings import CACHE_SIZE, DEFAULT_SEP
-from tools.language.utils import process_tokens
-from tools.typing import (TaggedTokens, TaggedTokenTuple, TokenDocs, Tokens,
+from ndg_tools import utils
+from ndg_tools._validation import _validate_tokens
+from ndg_tools.language.settings import CACHE_SIZE, DEFAULT_SEP
+from ndg_tools.language.utils import process_tokens
+from ndg_tools.typing import (TaggedTokens, TaggedTokenTuple, TokenDocs, Tokens,
                           TokenTuple)
 
 RE_NEG = re.compile(r"_NEG$")

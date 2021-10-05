@@ -15,13 +15,13 @@ from pandas.core.dtypes.missing import notna
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
 from scipy.sparse import csr_matrix
-from tools._validation import (
+from ndg_tools._validation import (
     _check_1d,
     _validate_strings,
     _check_tokdocs,
 )
-from tools.typing import CallableOnStr, SeedLike, TaggedTokens, Strings, TokenDocs
-from tools.utils import swap_index
+from ndg_tools.typing import CallableOnStr, SeedLike, TaggedTokens, Strings, TokenDocs
+from ndg_tools.utils import swap_index
 
 
 @singledispatch

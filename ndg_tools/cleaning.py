@@ -7,7 +7,7 @@ import pandas as pd
 from IPython.display import HTML, display
 
 from sklearn.utils import deprecated
-from tools import utils
+from ndg_tools import utils
 
 
 def memory_usage(data: pd.DataFrame, index=True, deep=True, unit="mb"):

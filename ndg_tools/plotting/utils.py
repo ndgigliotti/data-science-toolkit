@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.figure import Figure
 from sklearn.preprocessing import minmax_scale
-from tools.typing import SeedLike
+from ndg_tools.typing import SeedLike
 
 # Default style settings for heatmaps
 HEATMAP_STYLE = MappingProxyType(

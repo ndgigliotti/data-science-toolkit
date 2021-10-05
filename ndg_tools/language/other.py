@@ -13,11 +13,11 @@ from fuzzywuzzy.process import extractOne as extract_one
 from numpy import ndarray
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
-from tools import outliers, plotting
-from tools._validation import _invalid_value
-from tools.language.utils import process_strings
+from ndg_tools import outliers, plotting
+from ndg_tools._validation import _invalid_value
+from ndg_tools.language.utils import process_strings
 import joblib
-from tools.typing import Documents, PatternLike
+from ndg_tools.typing import Documents, PatternLike
 
 
 def _findall(id_, pat, docs, flags):
