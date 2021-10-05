@@ -8,4 +8,4 @@ pip install git+https://github.com/ndgigliotti/ndg-tools.git@main
 
 # Future Work
 
-I plan to develop subsets of the tools into specialized packages which are geared towards general public use.
+I plan to develop subsets of the tools into specialized packages which are geared toward public use.
