@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from sklearn import metrics
 from sklearn.utils.multiclass import unique_labels
 from tools import utils
-from tools.plotting.utils import HEATMAP_STYLE, heatmap_figsize
+from tools.plotting.utils import HEATMAP_STYLE, heatmap_figsize, get_desat_cmap
 
 
 def pair_corr_heatmap(
@@ -144,6 +144,7 @@ def confusion_matrix(
     annot_kws=None,
     fmt=".2f",
     cmap="Blues",
+    desat=.7,
     cbar=False,
     linewidths=0,
     linecolor="w",
@@ -173,7 +174,7 @@ def confusion_matrix(
         annot=annot,
         annot_kws=annot_kws,
         fmt=fmt,
-        cmap=cmap,
+        cmap=get_desat_cmap(cmap, desat=desat),
         cbar=cbar,
         linewidths=linewidths,
         linecolor=linecolor,

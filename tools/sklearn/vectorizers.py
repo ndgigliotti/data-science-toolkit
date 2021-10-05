@@ -1,13 +1,20 @@
+import copy
 import string
 from functools import partial
-from tools import utils
 from typing import Callable
-import copy
+import nltk
+
 import numpy as np
 import pandas as pd
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.sentiment.util import mark_negation
 from pandas.core.series import Series
 from scipy.sparse import csr_matrix
+from tools import language as lang
+from tools import utils
+from tools._validation import _invalid_value, _validate_raw_docs
+from tools.typing import CallableOnStr
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import (
     CountVectorizer,
@@ -19,11 +26,8 @@ from sklearn.feature_extraction.text import (
 )
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, Normalizer
+from sklearn.utils import deprecated
 from sklearn.utils.validation import check_is_fitted
-
-from tools import language as lang
-from tools._validation import _invalid_value, _validate_raw_docs
-from tools.typing import CallableOnStr
 
 
 class VaderVectorizer(BaseEstimator, TransformerMixin):
@@ -88,8 +92,13 @@ class VaderVectorizer(BaseEstimator, TransformerMixin):
                     f"Expected `preprocessor` to be callable, got {type(self.preprocessor)}"
                 )
 
+    @deprecated("Use `get_feature_names_out` instead.")
     def get_feature_names(self):
         """Return list of feature names."""
+        return self.feature_names_
+
+    def get_feature_names_out(self, input_features=None):
+        """Return list of feature names. `input_features` does nothing."""
         return self.feature_names_
 
     def fit(self, X, y=None):
@@ -197,10 +206,6 @@ class VectorizerMixin(_VectorizerMixin):
         if self.strip_twitter_handles:
             pipe.append(lang.strip_twitter_handles)
 
-        # Pad numeric sequences with space, i.e. 'paris64' -> 'paris 64'
-        if self.pad_numeric:
-            pipe.append(lang.pad_numeric)
-
         # Strip punctuation
         if self.strip_punct:
             if isinstance(self.strip_punct, str):
@@ -211,6 +216,9 @@ class VectorizerMixin(_VectorizerMixin):
         # Strip all non-word characters (non-alphanumeric)
         if self.strip_non_word:
             pipe.append(lang.strip_non_word)
+
+        if self.limit_repeats:
+            pipe.append(lang.limit_repeats)
 
         # Strip extra whitespaces, tabs, and linebreaks
         if self.strip_extra_space:
@@ -558,7 +566,6 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         lowercase=True,
         strip_extra_space=False,
         strip_numeric=False,
-        pad_numeric=False,
         strip_non_word=False,
         strip_punct=False,
         strip_twitter_handles=False,
@@ -611,7 +618,6 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         self.decode_html_entities = decode_html_entities
         self.strip_extra_space = strip_extra_space
         self.strip_numeric = strip_numeric
-        self.pad_numeric = pad_numeric
         self.strip_non_word = strip_non_word
         self.strip_punct = strip_punct
         self.strip_twitter_handles = strip_twitter_handles
