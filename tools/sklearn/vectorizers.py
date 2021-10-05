@@ -28,6 +28,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, Normalizer
 from sklearn.utils import deprecated
 from sklearn.utils.validation import check_is_fitted
+from joblib import Parallel, delayed
 
 
 class VaderVectorizer(BaseEstimator, TransformerMixin):
@@ -35,57 +36,41 @@ class VaderVectorizer(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
+
+    round_scores : bool, optional
+        Round scores to the nearest integer. By default False.
+    preprocessor : CallableOnStr, optional
+        Callable for preprocessing text before VADER analysis, by default None.
     decode_html_entities: bool, optional
         Decode HTML entities such as '&mdash;' or '&lt;' or '&gt;' into symbols,
         e.g. '—', '<', '>'. True by default.
-    trinarize : bool, optional
-        Convert vector elements to ternary sign indicators -1.0, 0.0, and 1.0. By default False.
-    category : bool, optional
-        Include the positive, neutral, and negative scores in vectors, by default True.
-    compound : bool, optional
-        Include the compound score in vectors, by default True.
-    preprocessor : CallableOnStr, optional
-        Callable for preprocessing text before VADER analysis, by default None.
-    norm : str, optional
-        Normalization to apply, by default "l2".
+    n_jobs: int, optional
+        Number of processes for computing scores. Defaults to None.
+    dtype: dtype, str
+        Type of output elements. Defaults to `np.float64`.
     sparse : bool, optional
-        Output a sparse matrix, by default True.
+        Output a sparse matrix, by default False.
     """
 
     def __init__(
         self,
-        decode_html_entities=True,
-        trinarize=False,
-        category=True,
-        compound=True,
+        round_scores=False,
         preprocessor: CallableOnStr = None,
-        norm=None,
-        sparse=True,
+        decode_html_entities=True,
+        n_jobs=None,
+        dtype=np.float64,
+        sparse=False,
     ):
-        self.decode_html_entities = decode_html_entities
-        self.trinarize = trinarize
-        self.category = category
-        self.compound = compound
+        self.round_scores = round_scores
         self.preprocessor = preprocessor
-        self.norm = norm
+        self.decode_html_entities = decode_html_entities
+        self.n_jobs = n_jobs
+        self.dtype = dtype
         self.sparse = sparse
-        self.vader = SentimentIntensityAnalyzer()
-
-    def build_postprocessor(self):
-        """Construct postprocessing pipeline based on parameters."""
-        pipe = Pipeline([("sign", None), ("norm", None), ("csr", None)])
-        if self.trinarize:
-            pipe.set_params(sign=FunctionTransformer(np.sign))
-        if self.norm is not None:
-            pipe.set_params(norm=Normalizer(norm=self.norm))
-        if self.sparse:
-            pipe.set_params(csr=FunctionTransformer(csr_matrix))
-        return pipe
+        self._vader = SentimentIntensityAnalyzer()
 
     def _validate_params(self):
         """Validate some parameters."""
-        if not (self.category or self.compound):
-            raise ValueError("Either `category` or `compound` must be True.")
         if self.preprocessor is not None:
             if not isinstance(self.preprocessor, Callable):
                 raise TypeError(
@@ -95,47 +80,49 @@ class VaderVectorizer(BaseEstimator, TransformerMixin):
     @deprecated("Use `get_feature_names_out` instead.")
     def get_feature_names(self):
         """Return list of feature names."""
-        return self.feature_names_
+        return self.get_feature_names_out()
 
     def get_feature_names_out(self, input_features=None):
         """Return list of feature names. `input_features` does nothing."""
-        return self.feature_names_
+        feat_names = ["neg", "neu", "pos", "compound"]
+        return feat_names
 
-    def fit(self, X, y=None):
-        """Does nothing except validate parameters and save feature names."""
+    def fit(self, raw_documents, y=None):
+        """Does nothing except validate parameters."""
         self._validate_params()
-        _validate_raw_docs(X)
-        self.feature_names_ = []
-        if self.category:
-            self.feature_names_ += ["neg", "neu", "pos"]
-        if self.compound:
-            self.feature_names_.append("comp")
+        _validate_raw_docs(raw_documents)
         return self
 
-    def transform(self, X):
+    def transform(self, raw_documents):
         """Extracts the polarity scores and applies postprocessing."""
         # Input and param validation
         self._validate_params()
-        _validate_raw_docs(X)
+        _validate_raw_docs(raw_documents)
+        workers = Parallel(n_jobs=self.n_jobs, prefer="processes")
 
         # Apply preprocessing
-        docs = X
+        docs = raw_documents
         if self.decode_html_entities:
-            docs = [lang.decode_html_entities(x) for x in docs]
+            decode = delayed(lang.decode_html_entities)
+            docs = workers(decode(x) for x in docs)
         if self.preprocessor is not None:
-            docs = self.preprocessor(docs)
+            docs = [self.preprocessor(x) for x in docs]
 
         # Perform VADER analysis
-        vecs = pd.DataFrame([self.vader.polarity_scores(x) for x in docs])
-        if self.compound and not self.category:
-            vecs = vecs.loc[:, ["comp"]].copy()
-        if self.category and not self.compound:
-            vecs = vecs.loc[:, ["neg", "neu", "pos"]].copy()
-        self.feature_names_ = vecs.columns.to_list()
+        polarity_scores = delayed(self._vader.polarity_scores)
+        vecs = pd.DataFrame(workers(polarity_scores(x) for x in docs), dtype=self.dtype)
+        vecs = vecs.loc[:, self.get_feature_names_out()].to_numpy()
 
         # Apply postprocessing and return
-        postprocessor = self.build_postprocessor()
-        return postprocessor.fit_transform(vecs.to_numpy())
+        if self.round_scores:
+            vecs = vecs.round()
+        if self.sparse:
+            vecs = csr_matrix(vecs)
+        return vecs
+
+    def fit_transform(self, raw_documents, y=None):
+        """Extracts the polarity scores and applies postprocessing."""
+        return self.transform(raw_documents)
 
 
 class VectorizerMixin(_VectorizerMixin):
