@@ -1,4 +1,4 @@
-name: dstk-env
+name: nlp-env
 channels:
   - conda-forge
   - defaults
@@ -19,6 +19,7 @@ dependencies:
   - pillow
   - pip
   - pyarrow
+  - pytest
   - requests
   - sacremoses
   - scikit-learn

@@ -16,6 +16,10 @@ from ndg_tools.language.settings import CACHE_SIZE, DEFAULT_SEP
 from ndg_tools.language.utils import process_tokens
 from ndg_tools.typing import (TaggedTokens, TaggedTokenTuple, TokenDocs, Tokens,
                           TokenTuple)
+                          
+nltk.download("averaged_perceptron_tagger")
+nltk.download("universal_tagset")
+nltk.download("wordnet")
 
 RE_NEG = re.compile(r"_NEG$")
 

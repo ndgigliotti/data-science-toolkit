@@ -149,7 +149,7 @@ def _(
         bar_desc=bar_desc,
         **kwargs,
     )
-    return np.array(strings, dtype="O", copy=False).reshape(orig_shape)
+    return np.array(strings, dtype=str, copy=False).reshape(orig_shape)
 
 
 @process_strings.register
@@ -280,8 +280,11 @@ def _(
         bar_desc=bar_desc,
         **kwargs,
     )
-    dtype = str if isinstance(tokens[0], str) else "O"
-    return np.array(tokens, dtype=dtype)
+    if len(tokens) == 0 or isinstance(tokens[0], str):
+        tokens = np.array(tokens, dtype=str)
+    else:
+        tokens = np.array(tokens, dtype="O")
+    return tokens
 
 
 @process_tokens.register
@@ -304,8 +307,11 @@ def _(
         bar_desc=bar_desc,
         **kwargs,
     )
-    dtype = "string" if isinstance(tokens[0], str) else "object"
-    return Series(tokens, index=index, name=name, dtype=dtype)
+    if len(tokens) == 0 or isinstance(tokens[0], str):
+        tokens = pd.Series(tokens, name=name, dtype="string")
+    else:
+        tokens = Series(tokens, index=index, name=name, dtype="O")
+    return tokens
 
 
 def chain_processors(

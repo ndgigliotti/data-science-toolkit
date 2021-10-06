@@ -61,6 +61,7 @@ class VaderVectorizer(BaseEstimator, TransformerMixin):
         dtype=np.float64,
         sparse=False,
     ):
+        nltk.download("vader_lexicon")
         self.round_scores = round_scores
         self.preprocessor = preprocessor
         self.decode_html_entities = decode_html_entities
