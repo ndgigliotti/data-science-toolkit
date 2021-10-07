@@ -1,20 +1,19 @@
+import os
+
 import numpy as np
 import pandas as pd
-import os
+from ndg_tools.sklearn.vectorizers import FreqVectorizer, VaderVectorizer
+from ndg_tools.tests import DATA_DIR
 from sklearn import clone
 from sklearn.experimental import enable_halving_search_cv
-from sklearn.model_selection import GridSearchCV, HalvingGridSearchCV, train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import HalvingGridSearchCV, train_test_split
+from sklearn.pipeline import make_pipeline
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline, make_pipeline
-import ndg_tools
-from ndg_tools.sklearn.vectorizers import VaderVectorizer, FreqVectorizer
-from ndg_tools.tests import DATA_DIR
 
 
 class TestVaderVectorizer:
-    data = pd.read_parquet(os.path.join(DATA_DIR, "sentiment-140.parquet"))
+    data = pd.read_parquet(os.path.join(DATA_DIR, "tweets_sentiment.parquet"))
     X = data["text"].copy()
     y = data["polarity"].copy()
     X_train, X_test, y_train, y_test = train_test_split(
@@ -50,7 +49,7 @@ class TestVaderVectorizer:
 
 
 class TestFreqVectorizer:
-    data = pd.read_parquet(os.path.join(DATA_DIR, "sentiment-140.parquet"))
+    data = pd.read_parquet(os.path.join(DATA_DIR, "tweets_sentiment.parquet"))
     X = data["text"].copy()
     y = data["polarity"].copy()
     X_train, X_test, y_train, y_test = train_test_split(
