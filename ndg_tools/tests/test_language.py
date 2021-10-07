@@ -1,15 +1,12 @@
-import functools
 import os
-import re
-from numpy.core import function_base
-import pytest
+from string import digits, punctuation
+
 import numpy as np
 import pandas as pd
-from string import punctuation, digits
+import pytest
 from ndg_tools import language as lang
+from ndg_tools.tests import DATA_DIR
 from sklearn.datasets import fetch_20newsgroups
-
-DATA_DIR = "test_data"
 
 
 def _scramble_chars(string):
@@ -205,7 +202,6 @@ class TestTextProcessors:
     docs = pd.Series(
         fetch_20newsgroups(
             data_home=DATA_DIR,
-            random_state=None,
             subset="all",
         )["data"]
     )
@@ -225,9 +221,9 @@ class TestTextProcessors:
 
     def test_strip_numeric(self):
         assert lang.strip_numeric(digits) == ""
-        clean_docs = lang.strip_numeric(self.docs.sample(100))
+        clean_docs = lang.strip_numeric(self.docs.sample(100, random_state=63))
         assert not clean_docs.str.contains(r"\d").any()
-        assert clean_docs.str.contains(r"\b\w+\b").sum() > (0.9 * clean_docs.size)
+        assert clean_docs.str.contains(r"\b\w+\b").all()
 
     def test_strip_end_space(self):
         tar = " \n\r\f\n\n     blah blah      \t\v\v\f\t\n "
@@ -240,6 +236,6 @@ class TestTextProcessors:
         assert lang.strip_extra_space(tar) == ref
 
     def test_strip_non_word(self):
-        clean_docs = lang.strip_non_word(self.docs.sample(100))
+        clean_docs = lang.strip_non_word(self.docs.sample(100, random_state=16))
         assert not clean_docs.str.contains(r"[^\w ]").any()
-        assert clean_docs.str.contains(r"\b\w+\b").sum() > (0.9 * clean_docs.size)
+        assert clean_docs.str.contains(r"\b\w+\b").all()
