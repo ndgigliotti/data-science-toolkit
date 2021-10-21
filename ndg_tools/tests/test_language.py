@@ -4,7 +4,8 @@ from string import digits, punctuation
 import numpy as np
 import pandas as pd
 import pytest
-from ndg_tools import language as lang
+import itertools
+from ndg_tools import language as lang, utils
 from ndg_tools.tests import DATA_DIR
 from sklearn.datasets import fetch_20newsgroups
 
@@ -239,3 +240,46 @@ class TestTextProcessors:
         clean_docs = lang.strip_non_word(self.docs.sample(100, random_state=16))
         assert not clean_docs.str.contains(r"[^\w ]").any()
         assert clean_docs.str.contains(r"\b\w+\b").all()
+
+
+class TestTokenProcessors:
+    docs = pd.Series(
+        fetch_20newsgroups(
+            data_home=DATA_DIR,
+            subset="all",
+        )["data"]
+    )
+    rng = np.random.default_rng(894)
+
+    def test_fetch_stopwords(self):
+        alias = ["nltk", "sklearn"]
+        atomic = [
+            "nltk_english",
+            "nltk_spanish",
+            "nltk_german",
+            "sklearn_english",
+        ]
+        operators = ["|", "&", "-", "^"]
+
+        # Construct complexity 1 queries
+        level_1 = [" ".join(x) for x in utils.cartesian(atomic, operators, atomic)]
+        wrapped = [f"({x})" for x in level_1]
+
+        # Construct (sample of) complexity 2 queries
+        level_2 = utils.cartesian(wrapped + atomic, operators, wrapped + atomic)
+        sample_idx = self.rng.choice(len(level_2), len(level_2) // 100)
+        level_2 = [" ".join(x) for x in np.take(level_2, sample_idx, axis=0)]
+
+        # Test queries
+        for query in alias + atomic:
+            stopwords = lang.fetch_stopwords(query)
+            assert stopwords
+            assert all([isinstance(x, str) for x in stopwords])
+        for query in level_1:
+            stopwords = lang.fetch_stopwords(query)
+            if "|" in query:
+                assert stopwords
+            assert all([isinstance(x, str) for x in stopwords])
+        for query in level_2:
+            stopwords = lang.fetch_stopwords(query)
+            assert all([isinstance(x, str) for x in stopwords])

@@ -2,12 +2,13 @@ import copy
 import string
 from functools import partial
 from typing import Callable
+import warnings
 import nltk
 
 import numpy as np
 import pandas as pd
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from nltk.sentiment.util import mark_negation
+from nltk.sentiment.util import mark_negation as nltk_mark_negation
 from pandas.core.series import Series
 from scipy.sparse import csr_matrix
 from ndg_tools import language as lang
@@ -254,6 +255,12 @@ class VectorizerMixin(_VectorizerMixin):
             elif self.stemmer == "wordnet":
                 pipe.append(lang.wordnet_lemmatize)
 
+            if self.mark_negation:
+                pipe.append(nltk_mark_negation)
+                if self.lowercase:
+                    # Make tags lowercase to avoid warning
+                    pipe.append(lang.lowercase)
+
             # Remove stopwords
             if self.stop_words is not None:
                 stop_words = self.get_stop_words()
@@ -320,6 +327,15 @@ class VectorizerMixin(_VectorizerMixin):
         if self.stemmer not in valid_stemmer:
             if not callable(self.stemmer):
                 _invalid_value("stemmer", self.stemmer, valid_stemmer)
+        if self.stemmer == "porter" and self.mark_negation:
+            warnings.warn("Porter stemmer may disrupt negation marking.")
+        tokenizer_is_default = (
+            self.tokenizer is None and self.token_pattern == r"\b\w\w+\b"
+        )
+        if (
+            tokenizer_is_default or self.strip_punct or self.strip_non_word
+        ) and self.mark_negation:
+            warnings.warn("Sentence punctuation required to mark negation.")
 
 
 class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
@@ -368,45 +384,44 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         Both 'ascii' and 'unicode' use NFKD normalization from
         :func:`unicodedata.normalize`.
 
-    decode_html_entities : bool, ** NEW **
+    decode_html_entities : bool
         Decode HTML entities such as '&mdash;' or '&lt;' or '&gt;' into symbols,
         e.g. '—', '<', '>'. True by default.
 
     lowercase : bool
         Convert all characters to lowercase before tokenizing. True by default.
 
-    strip_extra_space: bool, ** NEW **
+    strip_extra_space: bool
         Strip extra whitespaces (including tabs and newlines). False by default.
 
-    strip_numeric: bool, ** NEW **
+    strip_numeric: bool
         Strip numerals [0-9] from text. False by default.
 
-    pad_numeric: bool, ** NEW **
-        Add space between alphabetic and numeric characters which appear together
-        in a word-like sequence. For example, 'spiderman2' would become 'spiderman 2'.
-        False by default.
-
-    strip_non_word: bool, ** NEW **
+    strip_non_word: bool
         Strip all non-alphanumeric characters (except underscore). False by default.
 
     strip_punct: bool or str of punctuation symbols
         If True, strip all punctuation. If passed a string of punctuation symbols, strip
         only those symbols. False by default.
 
-    strip_twitter_handles: bool, ** NEW **
+    strip_twitter_handles: bool
         Strip Twitter @mentions. False by default.
 
-    strip_html_tags: bool, ** NEW **
+    strip_html_tags: bool
         Strip HTML tags such as '<p>' or '<div>'. False by default.
 
-    limit_repeats: bool, ** NEW **
+    limit_repeats: bool
         Limit strings of repeating characters, e.g. 'zzzzzzzzzzz', to length 3.
 
-    length_filter: tuple (int, int), ** NEW **
-        Drop tokens which are outside the prescribed character length range.
-        Range is inclusive. Defaults to (None, None).
+    uniq_char_thresh: float
+        Remove tokens with a unique character ratio below threshold. Useful for removing
+        repetitive strings like 'AAAAAAAAAAARGH' or 'dogdogdog'. None by default.
 
-    stemmer: {'porter', 'wordnet'}, ** NEW **
+    mark_negation: bool
+        Mark tokens with '_NEG' which appear between a negation word and sentence
+        punctuation. Useful for sentiment analysis. False by default.
+
+    stemmer: {'porter', 'wordnet'}
         Stemming or lemmatization algorithm to use. Both implement caching in order to
         reuse previous computations. Valid options:
         * 'porter' - Porter stemming algorithm (faster).
@@ -427,14 +442,13 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         If a callable is passed it is used to extract the sequence of features
         out of the raw, unprocessed input.
 
-    stop_words : str, list, ** IMPROVED **
+    stop_words : str or list of str
         If a string, it is passed to `tools.language.fetch_stopwords` and
         the appropriate stopword list is returned. Valid strings:
-        * 'skl_english' - Scikit-Learn's English stopwords.
+        * 'sklearn_english' - Scikit-Learn's English stopwords.
         * 'nltk_LANGUAGE' - Any NLTK stopwords set, where the fileid (language) follows the underscore.
             For example: 'nltk_english', 'nltk_french', 'nltk_spanish'.
-        * 'gensim_english' - Gensim's English stopwords set.
-        * Supports complex queries using set operators, e.g. '(nltk_french & nltk_spanish) | skl_english'.
+        * Supports complex queries using set operators, e.g. '(nltk_french & nltk_spanish) | sklearn_english'.
 
         If a list, that list is assumed to contain stop words, all of which
         will be removed from the resulting tokens.
@@ -444,7 +458,7 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         in the range [0.7, 1.0) to automatically detect and filter stop
         words based on intra corpus document frequency of terms.
 
-    token_pattern : str, default=r"(?u)\\b\\w\\w+\\b"
+    token_pattern : str, default=r"\\b\\w\\w+\\b"
         Regular expression denoting what constitutes a "token", only used
         if ``analyzer == 'word'``. The default regexp selects tokens of 2
         or more alphanumeric characters (punctuation is completely ignored
@@ -500,7 +514,7 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         Type of the matrix returned by fit_transform() or transform().
         'float64' by default.
 
-    norm : {'l2', 'l1', 'max'}
+    norm : {'l2', 'l1'}
         Each output row will have unit norm, either:
         * 'l2': Sum of squares of vector elements is 1. The cosine
         similarity between two vectors is their dot product when l2 norm has
@@ -560,6 +574,7 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         strip_html_tags=False,
         limit_repeats=False,
         uniq_char_thresh=None,
+        mark_negation=False,
         stemmer=None,
         preprocessor=None,
         tokenizer=None,
@@ -613,6 +628,7 @@ class FreqVectorizer(TfidfVectorizer, VectorizerMixin):
         self.limit_repeats = limit_repeats
         self.stemmer = stemmer
         self.uniq_char_thresh = uniq_char_thresh
+        self.mark_negation = mark_negation
         self.process_stop_words = process_stop_words
 
     def get_keywords(self, document, top_n=None):

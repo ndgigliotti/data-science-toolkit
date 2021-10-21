@@ -1,31 +1,29 @@
 import os
+import nltk
 
 import numpy as np
 import pandas as pd
 from ndg_tools.sklearn.vectorizers import FreqVectorizer, VaderVectorizer
 from ndg_tools.tests import DATA_DIR
+from ndg_tools import utils
 from sklearn import clone
 from sklearn.experimental import enable_halving_search_cv
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import HalvingGridSearchCV, train_test_split
+from sklearn.model_selection import HalvingGridSearchCV, cross_val_score
 from sklearn.pipeline import make_pipeline
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import MultinomialNB
 
 
 class TestVaderVectorizer:
     data = pd.read_parquet(os.path.join(DATA_DIR, "tweets_sentiment.parquet"))
     X = data["text"].copy()
     y = data["polarity"].copy()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, random_state=24, stratify=y
-    )
     classifier = DecisionTreeClassifier(random_state=35)
 
     def test_defaults(self):
         pipe = make_pipeline(VaderVectorizer(), clone(self.classifier))
-        pipe.fit(self.X_train, self.y_train)
-        score = accuracy_score(self.y_test, pipe.predict(self.X_test))
-        assert score == 0.624
+        score = cross_val_score(pipe, self.X, self.y).mean()
+        assert 0.5 < score < 1
 
     def test_grid_search(self):
         pipe = make_pipeline(VaderVectorizer(), clone(self.classifier))
@@ -46,22 +44,19 @@ class TestVaderVectorizer:
             random_state=78,
         )
         search.fit(self.X, self.y)
+        assert 0.5 < search.best_score_ < 1
 
 
 class TestFreqVectorizer:
     data = pd.read_parquet(os.path.join(DATA_DIR, "tweets_sentiment.parquet"))
     X = data["text"].copy()
     y = data["polarity"].copy()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, random_state=24, stratify=y
-    )
-    classifier = DecisionTreeClassifier(random_state=35)
+    classifier = MultinomialNB()
 
     def test_defaults(self):
         pipe = make_pipeline(FreqVectorizer(), clone(self.classifier))
-        pipe.fit(self.X_train, self.y_train)
-        score = accuracy_score(self.y_test, pipe.predict(self.X_test))
-        assert score == 0.62
+        score = cross_val_score(pipe, self.X, self.y).mean()
+        assert 0.5 < score < 1
 
     def build_search_estimator(self, param_grid, cv=3, n_jobs=-1, random_state=30):
         pipe = make_pipeline(FreqVectorizer(), clone(self.classifier))
@@ -89,22 +84,32 @@ class TestFreqVectorizer:
         }
         search = self.build_search_estimator(param_grid)
         search.fit(self.X, self.y)
+        assert 0.5 < search.best_score_ < 1
 
     def test_token_filters(self):
         param_grid = {
+            "tokenizer": [nltk.casual_tokenize],
             "uniq_char_thresh": [None, 0.375],
+            "mark_negation": [True, False],
             "stemmer": [None, "porter", "wordnet"],
             "stop_words": [
                 None,
                 "nltk_english",
-                "gensim_english",
-                "skl_english",
+                "sklearn_english",
                 {"the", "and", "or"},
             ],
             "ngram_range": [(1, 1), (1, 2)],
         }
         search = self.build_search_estimator(param_grid)
         search.fit(self.X, self.y)
+        assert 0.5 < search.best_score_ < 1
+
+    def test_mark_negation(self):
+        freq_vec = FreqVectorizer(mark_negation=True, tokenizer=nltk.casual_tokenize)
+        analyze = freq_vec.build_analyzer()
+        vocab = {w for d in self.X for w in analyze(d)}
+        tagged = {w for w in vocab if w.endswith("_neg")}
+        assert 600 < len(tagged) < 800
 
     def test_feature_selection(self):
         param_grid = {
@@ -126,3 +131,4 @@ class TestFreqVectorizer:
         }
         search = self.build_search_estimator(param_grid)
         search.fit(self.X, self.y)
+        assert 0.5 < search.best_score_ < 1

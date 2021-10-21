@@ -465,10 +465,10 @@ def remove_stopwords(
 def fetch_stopwords(query: str) -> Set[str]:
     """Fetch a recognized stopwords set.
 
-    Recognized sets include 'skl_english', 'nltk_english', 'nltk_spanish',
-    'nltk_french', 'gensim_english'. Will recognize 'nltk_{language}' in general
-    if provided the language (fileid) of an NLTK stopwords set. Supports complex
-    queries involving set operators '|', '&', '-', and '^' and parentheses.
+    Recognized sets include 'sklearn_english', 'nltk_english', 'nltk_spanish',
+    'nltk_french'. Will recognize 'nltk_{language}' in general if provided the
+    language (fileid) of an NLTK stopwords set. Supports complex queries involving
+    set operators '|', '&', '-', and '^' and parentheses.
 
     Parameters
     ----------
@@ -495,8 +495,8 @@ def fetch_stopwords(query: str) -> Set[str]:
                 raise ValueError(f"Invalid query: {query}")
             # Evaluate expression
             result = eval(expr)
-        # Fetch SKL stopwords
-        elif query in {"skl_english", "skl"}:
+        # Fetch sklearn stopwords
+        elif query in {"sklearn_english", "sklearn"}:
             from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
             result = set(ENGLISH_STOP_WORDS)
@@ -514,11 +514,6 @@ def fetch_stopwords(query: str) -> Set[str]:
             else:
                 # Defaults to 'english' if no languages specified
                 result = set(nltk.corpus.stopwords.words("english"))
-        # Fetch Gensim stopwords
-        elif query in {"gensim_english", "gensim"}:
-            from gensim.parsing.preprocessing import STOPWORDS
-
-            result = set(STOPWORDS)
         # Raise ValueError if unrecognized
         else:
             raise ValueError(f"Invalid query: {query}")
