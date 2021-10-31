@@ -17,5 +17,6 @@ setup(
         "tqdm",
         "nltk",
         "fuzzywuzzy",
+        "wordcloud",
     ],
 )
