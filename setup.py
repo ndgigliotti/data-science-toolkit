@@ -15,5 +15,7 @@ setup(
         "pandas",
         "seaborn",
         "tqdm",
+        "nltk",
+        "fuzzywuzzy",
     ],
 )
