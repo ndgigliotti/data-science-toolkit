@@ -3,12 +3,11 @@ from typing import Dict, List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-import wordcloud as wc
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from ndg_tools.plotting.utils import get_desat_cmap, smart_subplots
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
-from ndg_tools.plotting.utils import smart_subplots, get_desat_cmap
 
 
 @singledispatch
@@ -60,6 +59,8 @@ def _(
     **kwargs,
 ) -> Axes:
     """Dispatch for Series. Returns single Axes with wordcloud."""
+    from wordcloud import WordCloud
+
     # Create new Axes if none received
     if ax is None:
         _, ax = plt.subplots(figsize=size)
@@ -70,7 +71,7 @@ def _(
     # Get desaturated colormap
     cmap = get_desat_cmap(cmap, desat=desat)
 
-    cloud = wc.WordCloud(
+    cloud = WordCloud(
         colormap=cmap,
         width=width,
         height=height,

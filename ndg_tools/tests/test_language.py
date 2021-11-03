@@ -1,4 +1,6 @@
 import os
+from re import T
+import re
 from string import digits, punctuation
 
 import numpy as np
@@ -283,3 +285,22 @@ class TestTokenProcessors:
         for query in level_2:
             stopwords = lang.fetch_stopwords(query)
             assert all([isinstance(x, str) for x in stopwords])
+
+
+def test_length_dist():
+    news = fetch_20newsgroups(
+        data_home=DATA_DIR,
+        random_state=None,
+        subset="all",
+    )
+    df = pd.DataFrame({"text": news["data"], "filenames": news["filenames"]})
+    fig = lang.length_dist(df, tick_prec=1)
+    assert len(fig.get_axes()) == 2
+    
+    # Check labels and ticks
+    for ax, column in zip(fig.get_axes(), df.columns):
+        assert ax.get_xlabel() == "Character Count"
+        assert ax.get_ylabel() == "Document Count"
+        assert ax.get_title().startswith(f"Length of '{column}'")
+        ticks = [t.get_text() for t in ax.get_xticklabels() + ax.get_yticklabels()]
+        assert all([re.fullmatch(r"-?\d+\.\dK?", t) for t in ticks])

@@ -214,11 +214,12 @@ def length_dist(data: DataFrame, subset=None, tick_prec=0, log_scale=False, **kw
     subset = subset or data.columns
     if isinstance(subset, str):
         subset = [subset]
-    n_chars = data.loc[:, subset]
-    n_chars = n_chars.applymap(len, "ignore")
+    n_chars = data.loc[:, subset].copy().applymap(len, "ignore")
     if log_scale:
         n_chars += 1
-    fig = plotting.multi_dist(data=n_chars, log_scale=log_scale, **kwargs)
+    fig = plotting.multi_dist(
+        data=n_chars, log_scale=log_scale, ncols=len(subset), **kwargs
+    )
     axs = fig.get_axes()
     for col, ax in zip(subset, axs):
         ax.set(
@@ -234,7 +235,10 @@ def length_dist(data: DataFrame, subset=None, tick_prec=0, log_scale=False, **kw
 
 def detect_lang(docs: Documents, seed=None, n_jobs=None) -> Documents:
     import langdetect
+
     langdetect.DetectorFactory.seed = seed
-    docs = process_strings(docs, langdetect.detect, n_jobs=n_jobs, bar_desc="detect_lang")
+    docs = process_strings(
+        docs, langdetect.detect, n_jobs=n_jobs, bar_desc="detect_lang"
+    )
     langdetect.DetectorFactory.seed = None
     return docs

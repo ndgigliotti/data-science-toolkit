@@ -9,6 +9,7 @@ setup(
     url="https://github.com/ndgigliotti/data-science-toolkit",
     packages=find_packages(),
     install_requires=[
+        "more-itertools",
         "scikit-learn",
         "joblib",
         "numpy",

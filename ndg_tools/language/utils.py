@@ -22,6 +22,7 @@ from ndg_tools._validation import (
 )
 from ndg_tools.typing import CallableOnStr, SeedLike, TaggedTokens, Strings, TokenDocs
 from ndg_tools.utils import swap_index
+from more_itertools import chunked
 
 
 @singledispatch
@@ -29,6 +30,7 @@ def process_strings(
     strings: Strings,
     func: CallableOnStr,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -84,6 +86,7 @@ def process_strings(
         list(strings),
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
@@ -95,12 +98,13 @@ def _(
     strings: list,
     func: CallableOnStr,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
 ) -> list:
     """Dispatch for list."""
-    workers = joblib.Parallel(n_jobs=n_jobs, prefer="processes")
+    workers = joblib.Parallel(n_jobs=n_jobs, prefer="processes", batch_size=batch_size)
     func = joblib.delayed(partial(func, **kwargs))
     ident = joblib.delayed(lambda x: x)
     return workers(
@@ -114,6 +118,7 @@ def _(
     strings: set,
     func: CallableOnStr,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -123,6 +128,7 @@ def _(
         list(strings),
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
@@ -135,6 +141,7 @@ def _(
     strings: ndarray,
     func: CallableOnStr,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -145,6 +152,7 @@ def _(
         strings.flatten().tolist(),
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
@@ -157,6 +165,7 @@ def _(
     strings: Series,
     func: CallableOnStr,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -168,6 +177,7 @@ def _(
         strings.to_list(),
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
@@ -180,6 +190,7 @@ def _(
     strings: DataFrame,
     func: CallableOnStr,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -187,15 +198,25 @@ def _(
     """Dispatch for DataFrame. Applies `func` elementwise."""
     columns = strings.columns
     index = strings.index
-    strings = process_strings(
-        strings.to_numpy(),
+    n_rows, n_cols = strings.shape
+    flat = [v for _, c in strings.items() for v in c]
+    flat = process_strings(
+        flat,
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
     )
-    return DataFrame(strings, index=index, columns=columns, copy=False)
+    column_lists = chunked(flat, n_rows, strict=True)
+    column_series = [pd.Series(v, name=n, index=index) for n, v in zip(columns, column_lists)]
+    rebuilt = pd.concat(column_series, axis=1)
+    if rebuilt.shape != (n_rows, n_cols):
+        raise RuntimeError(
+            f"Failed to rebuild DataFrame with shape {(n_rows, n_cols)}."
+        )
+    return rebuilt
 
 
 @process_strings.register
@@ -203,6 +224,7 @@ def _(
     strings: str,
     func: CallableOnStr,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -216,6 +238,7 @@ def process_tokens(
     tokdocs: TokenDocs,
     func: Callable,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -228,6 +251,7 @@ def process_tokens(
         list(tokdocs),
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
@@ -239,6 +263,7 @@ def _(
     tokens: list,
     func: Callable,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -248,7 +273,9 @@ def _(
     if in_struct is Collection[str]:
         tokens = func(tokens, **kwargs)
     else:
-        workers = joblib.Parallel(n_jobs=n_jobs, prefer="processes")
+        workers = joblib.Parallel(
+            n_jobs=n_jobs, prefer="processes", batch_size=batch_size
+        )
         func = joblib.delayed(partial(func, **kwargs))
         tokens = workers(
             func(x) for x in tqdm(tokens, desc=bar_desc, disable=not show_bar)
@@ -266,6 +293,7 @@ def _(
     tokens: ndarray,
     func: Callable,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -276,6 +304,7 @@ def _(
         tokens.tolist(),
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
@@ -292,6 +321,7 @@ def _(
     tokens: Series,
     func: Callable,
     n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
     **kwargs,
@@ -303,6 +333,7 @@ def _(
         tokens.to_list(),
         func,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
         **kwargs,
@@ -317,7 +348,8 @@ def _(
 def chain_processors(
     strings: Strings,
     funcs: List[Callable],
-    n_jobs=None,
+    n_jobs: int = None,
+    batch_size: int = "auto",
     show_bar: bool = True,
     bar_desc: str = None,
 ) -> Any:
@@ -353,13 +385,18 @@ def chain_processors(
         strings,
         process_singular,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
     )
 
 
 def make_preprocessor(
-    funcs: List[Callable], n_jobs=None, show_bar: bool = True, bar_desc: str = None
+    funcs: List[Callable],
+    n_jobs=None,
+    batch_size: int = "auto",
+    show_bar: bool = True,
+    bar_desc: str = None,
 ) -> partial:
     """Create a pipeline callable which applies a chain of processors to docs.
 
@@ -381,6 +418,7 @@ def make_preprocessor(
         chain_processors,
         funcs=funcs,
         n_jobs=n_jobs,
+        batch_size=batch_size,
         show_bar=show_bar,
         bar_desc=bar_desc,
     )

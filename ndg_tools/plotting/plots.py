@@ -220,6 +220,8 @@ def multi_dist(
         ncols=ncols,
         size=(height, height),
     )
+    if isinstance(axs, plt.Axes):
+        axs = np.array([axs])
     set_invisible(axs)
 
     for ax, column in zip(axs.flat, data.columns):
