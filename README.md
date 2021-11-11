@@ -7,11 +7,11 @@ pip install git+https://github.com/ndgigliotti/ndg-tools.git@main
 ```
 # Important Modules
 
-## Language
+## `language`
 
 One of the most extensive modules in the package is `ndg_tools.language`, which contains string processing functions, token processing functions, n-gram search functions, and other utilities.
 
-### `processors`
+### `language.processors`
 
 A number of text (`str`) and token (`list` of `str`) processing functions can be found in `ndg_tools.language.processors`. For example, `strip_html_tags` thoroughly removes HTML tags from strings. All of the text processing functions are **polymorphic**, meaning that they behave differently according to the type of object passed to them. They work on singular strings as well as string-containers such as `list`s, `set`s, `ndarray`s, `Series`, or `DataFrame`s.
 
@@ -21,7 +21,7 @@ All of the text and token processors have a built-in [tqdm](https://github.com/t
 
 Several functions can be chained together in a pipeline using the `make_preprocessor` function. The function chain will be applied to each string independently, no matter what object type is passed.
 
-### `ngrams`
+### `language.ngrams`
 
 Inside `ndg_tools.language.ngrams` are functional wrappers of the [nltk](https://www.nltk.org/) colocation search tools. There is also a `stratified_ngrams` function, which allows for colocation-searching relative to a categorical variable. In other words, the documents are grouped by a categorical variable and each group is scanned independently for colocations.
 
@@ -29,7 +29,7 @@ Inside `ndg_tools.language.ngrams` are functional wrappers of the [nltk](https:/
 
 The `ndg_tools.sklearn` module contains tools related to Scikit-Learn and the Scikit-Learn API. Currently it contains a universal hyperparameter optimization function called `sweep`, and some custom text vectorizers such as `VaderVectorizer` and `FreqVectorizer`.
 
-### `sweep` Function
+### `sklearn.selection.sweep`
 
 The purpose of the `sweep` function is to provide a flexible interface to all of Scikit-Learn's hyperparameter optimization objects. The function itself has many parameters, which some may see as excessively complex. However, there are a number of benefits:
 
@@ -39,11 +39,11 @@ The purpose of the `sweep` function is to provide a flexible interface to all of
 - Specify the hyperparameter space with `Series` objects in addition to `list`s and `dict`s.
 - Hold some parameters in place for repeat use with `functools.partial`.
 
-### `VaderVectorizer`
+### `sklearn.vectorizers.VaderVectorizer`
 
 VADER (Valence Aware Dictionary and sEntiment Reasoner) is a rule-based sentiment analysis tool which assigns polarity scores to a short piece of text. While NLTK provides a nice implementation of VADER, I like to integrate my feature extraction/engineering with the Scikit-Learn API so it can be tuned and tested alongside the model. `VaderVectorizer` is simply a text vectorizer which extracts the four VADER polarity scores: negative, neutral, positive, and compound. It is intended to be used in a `FeatureUnion` with another vectorizer.
 
-### `FreqVectorizer`
+### `sklearn.vectorizers.FreqVectorizer`
 
 Because Scikit-Learn's `CountVectorizer` and `TfidfVectorizer` offer only a few preprocessing options, I extended them with many more. Sometimes preprocessing steps must be taken to avoid overfitting, but sometimes they are open to optimization. The new preprocessing options utilize functions in the `ndg_tools.language` module.
 
