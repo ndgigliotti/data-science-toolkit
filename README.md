@@ -49,7 +49,7 @@ Because Scikit-Learn's `CountVectorizer` and `TfidfVectorizer` offer only a few 
 
 One new preprocessing step which is enabled by default is decoding HTML entities like `&amp;` or `&mdash;`. These codes for punctuation symbols appear frequently in text, and are liable to become noise if not decoded.
 
-Another preprocessing option for use in sentiment analysis is negation-marking. By setting `mark_negation=True`, one tells the vectorizer to mark terms '_NEG' which appear between a negation term and sentential punctuation. 
+Another preprocessing option for use in sentiment analysis is negation-marking. Setting `mark_negation=True`, tells the vectorizer to mark terms '_NEG' which appear between a negation term and sentential punctuation.
 
 Note that while `FreqVectorizer` is a subclass of `TfidfVectorizer`, it is set to act as a `CountVectorizer` by default. IDF weighting, binarization, normalization, and other options can be easily activated.
 
