@@ -23,7 +23,7 @@ Several functions can be chained together in a pipeline using the `make_preproce
 
 ### `language.ngrams`
 
-Inside `ndg_tools.language.ngrams` are functional wrappers of the [nltk](https://www.nltk.org/) colocation search tools. There is also a `stratified_ngrams` function, which allows for colocation-searching relative to a categorical variable. In other words, the documents are grouped by a categorical variable and each group is scanned independently for colocations.
+Inside `ndg_tools.language.ngrams` are functional wrappers of the [nltk](https://www.nltk.org/) collocation search tools. There is also a `stratified_ngrams` function, which allows for collocation-searching relative to a categorical variable. In other words, the documents are grouped by a categorical variable and each group is scanned independently for collocations.
 
 ## `sklearn`
 
