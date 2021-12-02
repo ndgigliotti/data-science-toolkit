@@ -5,13 +5,14 @@ from typing import Collection, Union
 import joblib
 import nltk
 import pandas as pd
-from pandas.core.frame import DataFrame
-from pandas.core.series import Series
 from ndg_tools._validation import _validate_strings
 from ndg_tools.language.processors.tokens import fetch_stopwords, remove_stopwords
 from ndg_tools.language.settings import DEFAULT_TOKENIZER
 from ndg_tools.language.utils import chain_processors
 from ndg_tools.typing import CallableOnStr, Documents, Tokenizer
+from pandas.core.frame import DataFrame
+from pandas.core.series import Series
+from sklearn.utils import deprecated
 from tqdm.notebook import tqdm
 
 NGRAM_FINDERS = MappingProxyType(
@@ -33,7 +34,7 @@ NGRAM_METRICS = MappingProxyType(
 """Mapping for selecting ngram scoring object."""
 
 
-def stratified_ngrams(
+def categorical_ngrams(
     data: DataFrame,
     *,
     text: str,
@@ -85,6 +86,40 @@ def stratified_ngrams(
 
     # Stack frames vertically and renumber
     return pd.concat(cat_ngrams).reset_index(drop=True)
+
+
+@deprecated("Use `categorical_ngrams` instead.")
+def stratified_ngrams(
+    data: DataFrame,
+    *,
+    text: str,
+    cat: Union[str, Series],
+    n: int = 2,
+    metric: str = "pmi",
+    tokenizer: Tokenizer = DEFAULT_TOKENIZER,
+    preprocessor: CallableOnStr = None,
+    stopwords: Union[str, Collection[str]] = None,
+    min_freq: int = 0,
+    select_best: float = None,
+    fuse_tuples: bool = False,
+    sep: str = " ",
+    n_jobs=None,
+):
+    return categorical_ngrams(
+        data,
+        text=text,
+        cat=cat,
+        n=n,
+        metric=metric,
+        tokenizer=tokenizer,
+        preprocessor=preprocessor,
+        stopwords=stopwords,
+        min_freq=min_freq,
+        select_best=select_best,
+        fuse_tuples=fuse_tuples,
+        sep=sep,
+        n_jobs=n_jobs,
+    )
 
 
 @singledispatch
