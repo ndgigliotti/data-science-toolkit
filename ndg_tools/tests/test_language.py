@@ -38,8 +38,8 @@ class TestProcessStrings:
         text = self.docs.sample().squeeze()
         for func in self.funcs_to_try:
             ref_string = func(text)
-            tar_string = lang.process_strings(text, func)
-            assert tar_string == ref_string
+            test_string = lang.process_strings(text, func)
+            assert test_string == ref_string
 
     def test_list_input(self):
         """
@@ -48,9 +48,9 @@ class TestProcessStrings:
         docs = self.docs.sample(10).to_list()
         for func in self.funcs_to_try:
             ref_strings = [func(x) for x in docs]
-            tar_strings = lang.process_strings(docs, func)
-            assert tar_strings is not ref_strings
-            assert tar_strings == ref_strings
+            test_strings = lang.process_strings(docs, func)
+            assert test_strings is not ref_strings
+            assert test_strings == ref_strings
 
     def test_set_input(self):
         """
@@ -59,9 +59,9 @@ class TestProcessStrings:
         docs = set(self.docs.sample(10))
         for func in self.funcs_to_try:
             ref_strings = {func(x) for x in docs}
-            tar_strings = lang.process_strings(docs, func)
-            assert tar_strings is not ref_strings
-            assert tar_strings == ref_strings
+            test_strings = lang.process_strings(docs, func)
+            assert test_strings is not ref_strings
+            assert test_strings == ref_strings
 
     def test_ndarray_input(self):
         """
@@ -72,9 +72,9 @@ class TestProcessStrings:
             ref_strings = np.array([func(x) for x in docs.flat], dtype=str).reshape(
                 -1, 2
             )
-            tar_strings = lang.process_strings(docs, func)
-            assert tar_strings is not ref_strings
-            assert np.array_equal(tar_strings, ref_strings)
+            test_strings = lang.process_strings(docs, func)
+            assert test_strings is not ref_strings
+            assert np.array_equal(test_strings, ref_strings)
 
     def test_series_input(self):
         """
@@ -83,9 +83,9 @@ class TestProcessStrings:
         docs = self.docs.sample(10)
         for func in self.funcs_to_try:
             ref_strings = docs.map(func)
-            tar_strings = lang.process_strings(docs, func)
-            assert tar_strings is not ref_strings
-            assert tar_strings.equals(ref_strings)
+            test_strings = lang.process_strings(docs, func)
+            assert test_strings is not ref_strings
+            assert test_strings.equals(ref_strings)
 
     def test_dataframe_input(self):
         """
@@ -94,9 +94,9 @@ class TestProcessStrings:
         docs = pd.DataFrame(self.docs.sample(10).to_numpy().reshape(-1, 2))
         for func in self.funcs_to_try:
             ref_strings = docs.applymap(func)
-            tar_strings = lang.process_strings(docs, func)
-            assert tar_strings is not ref_strings
-            assert tar_strings.equals(ref_strings)
+            test_strings = lang.process_strings(docs, func)
+            assert test_strings is not ref_strings
+            assert test_strings.equals(ref_strings)
 
     def test_multiprocessing(self):
         """Use multiprocessing to see if errors are raised."""
@@ -119,9 +119,9 @@ class TestProcessTokens:
         tokens = list(self.tokdocs.sample().squeeze())
         for func in self.funcs_to_try:
             ref_tokens = func(tokens)
-            tar_tokens = lang.process_tokens(tokens, func)
-            assert tar_tokens is not ref_tokens
-            assert tar_tokens == ref_tokens
+            test_tokens = lang.process_tokens(tokens, func)
+            assert test_tokens is not ref_tokens
+            assert test_tokens == ref_tokens
 
     def test_nested_list_input(self):
         """
@@ -130,9 +130,9 @@ class TestProcessTokens:
         tokdocs = self.tokdocs.sample(10).to_list()
         for func in self.funcs_to_try:
             ref_tokdocs = [func(x) for x in tokdocs]
-            tar_tokdocs = lang.process_tokens(tokdocs, func)
-            assert tar_tokdocs is not ref_tokdocs
-            assert tar_tokdocs == ref_tokdocs
+            test_tokdocs = lang.process_tokens(tokdocs, func)
+            assert test_tokdocs is not ref_tokdocs
+            assert test_tokdocs == ref_tokdocs
 
     def test_flat_ndarray_input(self):
         """
@@ -141,9 +141,9 @@ class TestProcessTokens:
         tokens = np.array(self.tokdocs.sample().squeeze(), dtype=str)
         for func in self.funcs_to_try:
             ref_tokens = np.array(func(tokens), dtype=str)
-            tar_tokens = lang.process_tokens(tokens, func)
-            assert tar_tokens is not ref_tokens
-            assert np.array_equal(tar_tokens, ref_tokens)
+            test_tokens = lang.process_tokens(tokens, func)
+            assert test_tokens is not ref_tokens
+            assert np.array_equal(test_tokens, ref_tokens)
 
     def test_nested_ndarray_input(self):
         """
@@ -152,9 +152,9 @@ class TestProcessTokens:
         tokdocs = self.tokdocs.sample(10).to_numpy()
         for func in self.funcs_to_try:
             ref_tokdocs = np.array([func(x) for x in tokdocs], dtype="O")
-            tar_tokdocs = lang.process_tokens(tokdocs, func)
-            assert tar_tokdocs is not ref_tokdocs
-            assert np.array_equal(tar_tokdocs, ref_tokdocs)
+            test_tokdocs = lang.process_tokens(tokdocs, func)
+            assert test_tokdocs is not ref_tokdocs
+            assert np.array_equal(test_tokdocs, ref_tokdocs)
 
     def test_flat_series_input(self):
         """
@@ -163,9 +163,9 @@ class TestProcessTokens:
         tokens = list(self.tokdocs.sample().squeeze())
         for func in self.funcs_to_try:
             ref_tokens = pd.Series(func(tokens), dtype="string")
-            tar_tokens = lang.process_tokens(pd.Series(tokens), func)
-            assert tar_tokens is not ref_tokens
-            assert tar_tokens.equals(ref_tokens)
+            test_tokens = lang.process_tokens(pd.Series(tokens), func)
+            assert test_tokens is not ref_tokens
+            assert test_tokens.equals(ref_tokens)
 
     def test_nested_series_input(self):
         """
@@ -174,9 +174,9 @@ class TestProcessTokens:
         tokdocs = self.tokdocs.sample(10)
         for func in self.funcs_to_try:
             ref_tokdocs = tokdocs.map(func)
-            tar_tokdocs = lang.process_tokens(tokdocs, func)
-            assert tar_tokdocs is not ref_tokdocs
-            assert tar_tokdocs.equals(ref_tokdocs)
+            test_tokdocs = lang.process_tokens(tokdocs, func)
+            assert test_tokdocs is not ref_tokdocs
+            assert test_tokdocs.equals(ref_tokdocs)
 
     def test_multiprocessing(self):
         """Use multiprocessing to see if errors are raised."""
