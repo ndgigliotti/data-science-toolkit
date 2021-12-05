@@ -1,5 +1,4 @@
 import os
-from re import T
 import re
 from string import digits, punctuation
 
@@ -8,8 +7,7 @@ import pandas as pd
 import pytest
 import itertools
 from ndg_tools import language as lang, utils
-from ndg_tools.tests import DATA_DIR
-from sklearn.datasets import fetch_20newsgroups
+from ndg_tools.tests import DATA_DIR, TWEETS_PATH
 
 
 def _scramble_chars(string):
@@ -27,13 +25,7 @@ def _scramble_tokens(tokens):
 
 
 class TestProcessStrings:
-    docs = pd.Series(
-        fetch_20newsgroups(
-            data_home=DATA_DIR,
-            random_state=None,
-            subset="all",
-        )["data"]
-    )
+    docs = pd.read_parquet(TWEETS_PATH, columns=["text"]).squeeze()
     funcs_to_try = (
         lambda x: "",
         _scramble_chars,
@@ -107,7 +99,7 @@ class TestProcessStrings:
             assert tar_strings.equals(ref_strings)
 
     def test_multiprocessing(self):
-        """Put load on CPU to see if errors are raised."""
+        """Use multiprocessing to see if errors are raised."""
         if os.cpu_count == 1:
             pytest.skip("Found only 1 CPU.")
         else:
@@ -116,13 +108,7 @@ class TestProcessStrings:
 
 
 class TestProcessTokens:
-    docs = pd.Series(
-        fetch_20newsgroups(
-            data_home=DATA_DIR,
-            random_state=None,
-            subset="all",
-        )["data"]
-    )
+    docs = pd.read_parquet(TWEETS_PATH, columns=["text"]).squeeze()
     tokdocs = docs.str.split()
     funcs_to_try = (lambda x: [], _scramble_tokens)
 
@@ -193,7 +179,7 @@ class TestProcessTokens:
             assert tar_tokdocs.equals(ref_tokdocs)
 
     def test_multiprocessing(self):
-        """Put load on CPU to see if errors are raised."""
+        """Use multiprocessing to see if errors are raised."""
         if os.cpu_count == 1:
             pytest.skip("Found only 1 CPU.")
         else:
@@ -202,12 +188,7 @@ class TestProcessTokens:
 
 
 class TestTextProcessors:
-    docs = pd.Series(
-        fetch_20newsgroups(
-            data_home=DATA_DIR,
-            subset="all",
-        )["data"]
-    )
+    docs = pd.read_parquet(TWEETS_PATH, columns=["text"]).squeeze()
 
     def test_strip_punct(self):
         spaces = lang.strip_punct(punctuation)
@@ -229,14 +210,14 @@ class TestTextProcessors:
         assert clean_docs.str.contains(r"\b\w+\b").all()
 
     def test_strip_end_space(self):
-        tar = " \n\r\f\n\n     blah blah      \t\v\v\f\t\n "
-        ref = "blah blah"
-        assert lang.strip_end_space(tar) == ref
+        dirty = " \n\r\f\n\n     blah blah      \t\v\v\f\t\n "
+        clean = "blah blah"
+        assert lang.strip_end_space(dirty) == clean
 
     def test_strip_extra_space(self):
-        tar = "\t blah blah   \t  blah\n\n blah \r\fblah\f\t blah\n\v blah  \n\t"
-        ref = "blah blah blah blah blah blah blah"
-        assert lang.strip_extra_space(tar) == ref
+        dirty = "\t blah blah   \t  blah\n\n blah \r\fblah\f\t blah\n\v blah  \n\t"
+        clean = "blah blah blah blah blah blah blah"
+        assert lang.strip_extra_space(dirty) == clean
 
     def test_strip_non_word(self):
         clean_docs = lang.strip_non_word(self.docs.sample(100, random_state=16))
@@ -245,12 +226,7 @@ class TestTextProcessors:
 
 
 class TestTokenProcessors:
-    docs = pd.Series(
-        fetch_20newsgroups(
-            data_home=DATA_DIR,
-            subset="all",
-        )["data"]
-    )
+    docs = pd.read_parquet(TWEETS_PATH, columns=["text"]).squeeze()
     rng = np.random.default_rng(894)
 
     def test_fetch_stopwords(self):
@@ -288,15 +264,10 @@ class TestTokenProcessors:
 
 
 def test_length_dist():
-    news = fetch_20newsgroups(
-        data_home=DATA_DIR,
-        random_state=None,
-        subset="all",
-    )
-    df = pd.DataFrame({"text": news["data"], "filenames": news["filenames"]})
+    df = pd.read_parquet(TWEETS_PATH, columns=["text", "handle"])
     fig = lang.length_dist(df, tick_prec=1)
     assert len(fig.get_axes()) == 2
-    
+
     # Check labels and ticks
     for ax, column in zip(fig.get_axes(), df.columns):
         assert ax.get_xlabel() == "Character Count"

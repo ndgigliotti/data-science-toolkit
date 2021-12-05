@@ -1,21 +1,20 @@
 import os
-import nltk
 
+import nltk
 import numpy as np
 import pandas as pd
 from ndg_tools.sklearn.vectorizers import FreqVectorizer, VaderVectorizer
-from ndg_tools.tests import DATA_DIR
-from ndg_tools import utils
+from ndg_tools.tests import TWEETS_PATH
 from sklearn import clone
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import HalvingGridSearchCV, cross_val_score
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.naive_bayes import MultinomialNB
 
 
 class TestVaderVectorizer:
-    data = pd.read_parquet(os.path.join(DATA_DIR, "tweets_sentiment.parquet"))
+    data = pd.read_parquet(TWEETS_PATH)
     X = data["text"].copy()
     y = data["polarity"].copy()
     classifier = DecisionTreeClassifier(random_state=35)
@@ -48,7 +47,7 @@ class TestVaderVectorizer:
 
 
 class TestFreqVectorizer:
-    data = pd.read_parquet(os.path.join(DATA_DIR, "tweets_sentiment.parquet"))
+    data = pd.read_parquet(TWEETS_PATH)
     X = data["text"].copy()
     y = data["polarity"].copy()
     classifier = MultinomialNB()
