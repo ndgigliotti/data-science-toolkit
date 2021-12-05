@@ -14,7 +14,6 @@ from PIL.Image import Image
 from wordcloud import WordCloud
 
 WORDCLOUD_CMAPS = (
-    "Greys",
     "Purples",
     "Blues",
     "Greens",
