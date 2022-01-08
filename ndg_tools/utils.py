@@ -22,7 +22,7 @@ from pandas.core.series import Series
 from tqdm.notebook import tqdm
 
 from sklearn.preprocessing import FunctionTransformer
-from sklearn.utils import check_consistent_length, compute_sample_weight
+from sklearn.utils import check_consistent_length, compute_sample_weight, deprecated
 from ndg_tools._validation import _check_1d
 from ndg_tools.typing import FrameOrSeries, ArrayLike
 from fuzzywuzzy.process import dedupe, extractOne
@@ -741,6 +741,7 @@ def _(
     return data
 
 
+@deprecated("Incorrect weighting. Use `balanced_sample` instead.")
 def stratified_sample(
     data: DataFrame,
     by: Union[str, Series],
@@ -759,6 +760,33 @@ def stratified_sample(
     else:
         raise TypeError(f"Expected `by` to be str or Series, got {type(by).__name__}.")
     weights = compute_sample_weight(class_weight, by)
+    return data.sample(
+        n=n,
+        frac=frac,
+        weights=weights,
+        replace=replace,
+        random_state=random_state,
+        axis=axis,
+    )
+
+
+def balanced_sample(
+    data: DataFrame,
+    by: Union[str, Series],
+    n=None,
+    frac=None,
+    replace=False,
+    random_state=None,
+    axis=None,
+):
+    if isinstance(by, str):
+        by = data.loc[:, by]
+    elif isinstance(by, Series):
+        check_consistent_length(by, data)
+        by, data = by.align(data)
+    else:
+        raise TypeError(f"Expected `by` to be str or Series, got {type(by).__name__}.")
+    weights = by.map(by.value_counts(1) ** -1)
     return data.sample(
         n=n,
         frac=frac,
