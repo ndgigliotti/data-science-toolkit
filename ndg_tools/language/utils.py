@@ -210,7 +210,9 @@ def _(
         **kwargs,
     )
     column_lists = chunked(flat, n_rows, strict=True)
-    column_series = [pd.Series(v, name=n, index=index) for n, v in zip(columns, column_lists)]
+    column_series = [
+        pd.Series(v, name=n, index=index) for n, v in zip(columns, column_lists)
+    ]
     rebuilt = pd.concat(column_series, axis=1)
     if rebuilt.shape != (n_rows, n_cols):
         raise RuntimeError(

@@ -12,16 +12,16 @@ def _format_big_number(num, dec):
     if num != 0:
         mag = np.log10(np.abs(num))
         if mag >= 12:
-            num = num / 10 ** 12
+            num = num / 10**12
             abb = "T"
         elif mag >= 9:
-            num = num / 10 ** 9
+            num = num / 10**9
             abb = "B"
         elif mag >= 6:
-            num = num / 10 ** 6
+            num = num / 10**6
             abb = "M"
         elif mag >= 3:
-            num = num / 10 ** 3
+            num = num / 10**3
             abb = "K"
         num = round(num, dec)
     return f"{num:,.{dec}f}{abb}"

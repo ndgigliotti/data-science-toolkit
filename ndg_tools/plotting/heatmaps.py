@@ -144,7 +144,7 @@ def confusion_matrix(
     annot_kws=None,
     fmt=".2f",
     cmap="Blues",
-    desat=.7,
+    desat=0.7,
     cbar=False,
     linewidths=0,
     linecolor="w",

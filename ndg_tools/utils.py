@@ -840,7 +840,7 @@ def high_corr(data: DataFrame, thresh: float = 0.75) -> Series:
     return corr_df[high]
 
 
-def download(url: str, dst: str, chunk_size: int = 10 ** 6):
+def download(url: str, dst: str, chunk_size: int = 10**6):
     """Download a file to disk (with progress bar).
 
     Parameters

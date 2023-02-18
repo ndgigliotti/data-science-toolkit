@@ -6,7 +6,7 @@ setup(
     author_email="ndgigliotti@gmail.com",
     description="NLP and other DS tools developed for my own use.",
     license="MIT",
-    version='0.0.1',
+    version="0.0.1",
     url="https://github.com/ndgigliotti/data-science-toolkit",
     packages=find_packages(),
     install_requires=[

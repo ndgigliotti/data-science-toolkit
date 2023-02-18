@@ -31,7 +31,7 @@ WORD = re.compile(r"(\w+)")
 HTML_TAG = re.compile(r"<([^>]+)>")
 HTML_PROP = re.compile(r"\w+=[\"\'][\w\s-]+[\"\']")
 HTML_PART_TAG = re.compile(r"</?\w+\b|/?\w+>")
-PUNCT = re.compile(fr"([{re.escape(string.punctuation)}])")
+PUNCT = re.compile(rf"([{re.escape(string.punctuation)}])")
 SKL_TOKEN = re.compile(r"\b\w\w+\b")
 
 
@@ -153,7 +153,7 @@ def limit_repeats(docs: Documents, cut=3, repl=None, n_jobs=None) -> Documents:
     """
     if repl is None:
         repl = cut
-    repeating = re.compile(fr"(.)\1{{{cut},}}")
+    repeating = re.compile(rf"(.)\1{{{cut},}}")
     shorten = partial(repeating.sub, r"\1" * repl)
     return process_strings(docs, shorten, n_jobs=n_jobs, bar_desc="limit_repeats")
 
@@ -284,8 +284,8 @@ def strip_punct(
         raise ValueError(f"Invalid punctuation symbols: '{invalid}'")
     if exclude:
         exclude = re.escape(exclude)
-        punct = re.sub(fr"[{exclude}]", "", punct)
-    re_punct = re.compile(fr"[{re.escape(punct)}]")
+        punct = re.sub(rf"[{exclude}]", "", punct)
+    re_punct = re.compile(rf"[{re.escape(punct)}]")
 
     sub = partial(re_punct.sub, repl)
     return process_strings(docs, sub, n_jobs=n_jobs, bar_desc="strip_punct")

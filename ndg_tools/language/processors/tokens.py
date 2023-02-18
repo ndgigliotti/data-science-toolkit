@@ -14,9 +14,14 @@ from ndg_tools import utils
 from ndg_tools._validation import _validate_tokens
 from ndg_tools.language.settings import CACHE_SIZE, DEFAULT_SEP
 from ndg_tools.language.utils import process_tokens
-from ndg_tools.typing import (TaggedTokens, TaggedTokenTuple, TokenDocs, Tokens,
-                          TokenTuple)
-                          
+from ndg_tools.typing import (
+    TaggedTokens,
+    TaggedTokenTuple,
+    TokenDocs,
+    Tokens,
+    TokenTuple,
+)
+
 nltk.download("averaged_perceptron_tagger")
 nltk.download("universal_tagset")
 nltk.download("wordnet")
@@ -490,7 +495,7 @@ def fetch_stopwords(query: str) -> Set[str]:
             # Construct Python expression to fetch each set and perform set ops
             expr = re.sub("\w+", lambda x: f"fetch_stopwords('{x[0]}')", query)
             # Sanitize by restricting symbols
-            symbols = set(re.findall(fr"[{string.punctuation}]|\sif\s|\selse\s", expr))
+            symbols = set(re.findall(rf"[{string.punctuation}]|\sif\s|\selse\s", expr))
             if not symbols.issubset(set("|&-^_()'")):
                 raise ValueError(f"Invalid query: {query}")
             # Evaluate expression

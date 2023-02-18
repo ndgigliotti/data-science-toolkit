@@ -9,7 +9,7 @@ import pytest
 @pytest.mark.filterwarnings("ignore: Function stratified_sample")
 def test_balanced_sample():
     rng = np.random.default_rng(15)
-    df = np.zeros(shape=(10 ** 4, 10), dtype="int64")
+    df = np.zeros(shape=(10**4, 10), dtype="int64")
     df[rng.integers(df.shape[0], size=100), -1] = 1
     df[rng.integers(df.shape[0], size=3000), -1] = 2
     df[rng.integers(df.shape[0], size=500), -1] = 3
